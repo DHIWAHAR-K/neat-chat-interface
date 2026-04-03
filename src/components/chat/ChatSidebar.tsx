@@ -232,68 +232,70 @@ export function ChatSidebar({
 
         {/* ===== COLLAPSED STATE (Icon Rail) ===== */}
         <div
-          className={`absolute inset-0 flex flex-col items-center py-3 gap-0.5 transition-opacity duration-200 ${
+          className={`absolute inset-0 flex flex-col items-center pt-4 pb-3 transition-opacity duration-200 ${
             open ? "opacity-0 pointer-events-none" : "opacity-100 delay-100"
           }`}
           style={{ width: 52 }}
         >
-          {/* Top icons */}
+          {/* Top icons - tighter spacing matching screenshot */}
           <button
             onClick={onToggle}
-            className="p-2.5 rounded-lg text-icon-rail-foreground hover:text-foreground hover:bg-accent transition-colors"
+            className="p-2 rounded-lg text-icon-rail-foreground hover:text-foreground hover:bg-accent transition-colors"
             title="Open sidebar"
           >
-            <CopyIcon className="h-[18px] w-[18px]" />
+            <CopyIcon className="h-5 w-5" />
           </button>
           <button
             onClick={onNew}
-            className="p-2.5 rounded-lg text-icon-rail-foreground hover:text-foreground hover:bg-accent transition-colors"
+            className="p-2 rounded-lg text-icon-rail-foreground hover:text-foreground hover:bg-accent transition-colors mt-2"
             title="New chat"
           >
-            <Plus className="h-[18px] w-[18px]" />
+            <Plus className="h-5 w-5" />
           </button>
-          <button className="p-2.5 rounded-lg text-icon-rail-foreground hover:text-foreground hover:bg-accent transition-colors" title="Search">
-            <Search className="h-[18px] w-[18px]" />
+          <button className="p-2 rounded-lg text-icon-rail-foreground hover:text-foreground hover:bg-accent transition-colors" title="Search">
+            <Search className="h-5 w-5" />
           </button>
-          <button className="p-2.5 rounded-lg text-icon-rail-foreground hover:text-foreground hover:bg-accent transition-colors" title="Customize">
-            <Settings2 className="h-[18px] w-[18px]" />
-          </button>
-
-          <div className="w-6 border-t border-border my-1.5" />
-
-          <button className="p-2.5 rounded-lg text-icon-rail-foreground hover:text-foreground hover:bg-accent transition-colors" title="Chats">
-            <MessageCircle className="h-[18px] w-[18px]" />
-          </button>
-          <button className="p-2.5 rounded-lg text-icon-rail-foreground hover:text-foreground hover:bg-accent transition-colors" title="Projects">
-            <FolderKanban className="h-[18px] w-[18px]" />
-          </button>
-          <button className="p-2.5 rounded-lg text-icon-rail-foreground hover:text-foreground hover:bg-accent transition-colors" title="Artifacts">
-            <Blocks className="h-[18px] w-[18px]" />
-          </button>
-          <button className="p-2.5 rounded-lg text-icon-rail-foreground hover:text-foreground hover:bg-accent transition-colors" title="Code">
-            <Code2 className="h-[18px] w-[18px]" />
+          <button className="p-2 rounded-lg text-icon-rail-foreground hover:text-foreground hover:bg-accent transition-colors" title="Customize">
+            <Settings2 className="h-5 w-5" />
           </button>
 
+          {/* Gap before mid group */}
+          <div className="mt-2" />
+
+          <button className="p-2 rounded-lg text-icon-rail-foreground hover:text-foreground hover:bg-accent transition-colors" title="Chats">
+            <MessageCircle className="h-5 w-5" />
+          </button>
+          <button className="p-2 rounded-lg text-icon-rail-foreground hover:text-foreground hover:bg-accent transition-colors" title="Projects">
+            <FolderKanban className="h-5 w-5" />
+          </button>
+          <button className="p-2 rounded-lg text-icon-rail-foreground hover:text-foreground hover:bg-accent transition-colors" title="Artifacts">
+            <Blocks className="h-5 w-5" />
+          </button>
+          <button className="p-2 rounded-lg text-icon-rail-foreground hover:text-foreground hover:bg-accent transition-colors" title="Code">
+            <Code2 className="h-5 w-5" />
+          </button>
+
+          {/* Spacer pushes bottom items down */}
           <div className="flex-1" />
 
-          <button
-            onClick={onToggleTheme}
-            className="p-2.5 rounded-lg text-icon-rail-foreground hover:text-foreground hover:bg-accent transition-colors"
-            title={theme === "light" ? "Dark mode" : "Light mode"}
-          >
-            {theme === "light" ? <Moon className="h-[18px] w-[18px]" /> : <Sun className="h-[18px] w-[18px]" />}
-          </button>
-          <div className="relative">
-            <div className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-primary border-2 border-sidebar z-10" />
-            <button className="p-2.5 rounded-lg text-icon-rail-foreground hover:text-foreground hover:bg-accent transition-colors" title="Download">
-              <Download className="h-[18px] w-[18px]" />
+          {/* Bottom: blue dot, download, avatar */}
+          <div className="flex flex-col items-center gap-1">
+            {/* Blue notification dot */}
+            <div className="flex items-center justify-center h-5">
+              <div className="w-2.5 h-2.5 rounded-full" style={{ background: "hsl(217, 91%, 60%)" }} />
+            </div>
+            {/* Download */}
+            <button className="p-2 rounded-lg text-icon-rail-foreground hover:text-foreground hover:bg-accent transition-colors" title="Download">
+              <Download className="h-5 w-5" />
             </button>
-          </div>
-          <div
-            className="w-9 h-9 rounded-full bg-muted text-foreground flex items-center justify-center text-xs font-semibold cursor-pointer mt-1"
-            title="User"
-          >
-            DA
+            {/* User avatar - cream/beige circle */}
+            <div
+              className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-semibold cursor-pointer mt-0.5"
+              style={{ background: "hsl(40, 20%, 88%)", color: "hsl(30, 10%, 25%)" }}
+              title="User"
+            >
+              DA
+            </div>
           </div>
         </div>
       </aside>
