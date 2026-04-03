@@ -122,14 +122,7 @@ const Index = () => {
       <div className="flex-1 flex flex-col min-w-0">
         {/* Header */}
         <header className="flex items-center justify-between h-12 px-4 flex-shrink-0">
-          {!sidebarOpen && (
-            <button
-              onClick={() => setSidebarOpen(true)}
-              className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-            >
-              <PanelLeft className="h-5 w-5" />
-            </button>
-          )}
+          <div />
           {hasMessages ? (
             <>
               <button className="flex items-center gap-1 text-sm font-medium text-foreground hover:text-muted-foreground transition-colors">
