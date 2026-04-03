@@ -228,9 +228,6 @@ export function ChatSidebar({
             </div>
           ) : (
             <div className="flex flex-col items-center gap-1 pb-3">
-              <div className="flex items-center justify-center h-5">
-                <div className="w-2.5 h-2.5 rounded-full" style={{ background: "hsl(217, 91%, 60%)" }} />
-              </div>
               <button className="p-2 rounded-lg text-icon-rail-foreground hover:text-foreground hover:bg-accent transition-colors" title="Download">
                 <Download className="h-5 w-5" />
               </button>
