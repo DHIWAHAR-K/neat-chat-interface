@@ -1,13 +1,14 @@
 import { useState, useRef, useCallback, type DragEvent, type KeyboardEvent } from "react";
-import { ArrowUp, Paperclip, X } from "lucide-react";
+import { ArrowUp, Plus, X, ChevronDown, AudioLines } from "lucide-react";
 import { FileAttachment, genId } from "@/lib/chat-store";
 
 interface ChatInputProps {
   onSend: (content: string, files: FileAttachment[]) => void;
   disabled?: boolean;
+  isWelcome?: boolean;
 }
 
-export function ChatInput({ onSend, disabled }: ChatInputProps) {
+export function ChatInput({ onSend, disabled, isWelcome }: ChatInputProps) {
   const [text, setText] = useState("");
   const [files, setFiles] = useState<FileAttachment[]>([]);
   const [dragging, setDragging] = useState(false);
@@ -80,6 +81,7 @@ export function ChatInput({ onSend, disabled }: ChatInputProps) {
         onDragLeave={() => setDragging(false)}
         onDrop={handleDrop}
       >
+        {/* File chips */}
         {files.length > 0 && (
           <div className="flex flex-wrap gap-2 px-3 pt-3">
             {files.map((file) => (
@@ -99,38 +101,58 @@ export function ChatInput({ onSend, disabled }: ChatInputProps) {
           </div>
         )}
 
-        <div className="flex items-end gap-2 p-3">
-          <button
-            onClick={() => fileInputRef.current?.click()}
-            className="flex-shrink-0 p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors mb-0.5"
-            type="button"
-          >
-            <Paperclip className="h-5 w-5" />
-          </button>
-
+        {/* Textarea */}
+        <div className="px-3 pt-3 pb-1">
           <textarea
             ref={textareaRef}
             value={text}
             onChange={(e) => setText(e.target.value)}
             onKeyDown={handleKeyDown}
             onInput={handleInput}
-            placeholder="Message Claude..."
+            placeholder={isWelcome ? "How can I help you today?" : "Reply to Claude..."}
             rows={1}
-            className="flex-1 resize-none bg-transparent text-sm outline-none placeholder:text-muted-foreground max-h-[200px] py-1.5 leading-relaxed"
+            className="w-full resize-none bg-transparent text-sm outline-none placeholder:text-muted-foreground max-h-[200px] py-1 leading-relaxed"
           />
+        </div>
 
+        {/* Bottom row */}
+        <div className="flex items-center justify-between px-3 pb-2.5">
           <button
-            onClick={handleSend}
-            disabled={!canSend}
-            className={`flex-shrink-0 p-2 rounded-xl transition-all mb-0.5 ${
-              canSend
-                ? "bg-foreground text-background hover:opacity-80"
-                : "bg-muted text-muted-foreground cursor-not-allowed"
-            }`}
+            onClick={() => fileInputRef.current?.click()}
+            className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
             type="button"
           >
-            <ArrowUp className="h-4 w-4" />
+            <Plus className="h-5 w-5" />
           </button>
+
+          <div className="flex items-center gap-2">
+            {/* Model selector */}
+            <button
+              className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors px-2 py-1 rounded-md hover:bg-muted"
+              type="button"
+            >
+              Sonnet 4.6
+              <ChevronDown className="h-3 w-3" />
+            </button>
+
+            <button
+              className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+              type="button"
+            >
+              <AudioLines className="h-4 w-4" />
+            </button>
+
+            {/* Send button - only visible when there's text */}
+            {canSend && (
+              <button
+                onClick={handleSend}
+                className="p-1.5 rounded-lg bg-foreground text-background hover:opacity-80 transition-all"
+                type="button"
+              >
+                <ArrowUp className="h-4 w-4" />
+              </button>
+            )}
+          </div>
         </div>
 
         <input
@@ -142,7 +164,7 @@ export function ChatInput({ onSend, disabled }: ChatInputProps) {
         />
       </div>
 
-      <p className="text-center text-xs text-muted-foreground mt-2">
+      <p className="text-center text-[11px] text-muted-foreground mt-2">
         Claude can make mistakes. Please double-check responses.
       </p>
     </div>

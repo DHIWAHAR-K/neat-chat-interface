@@ -61,6 +61,10 @@ export default {
           DEFAULT: "hsl(var(--user-bubble))",
           foreground: "hsl(var(--user-bubble-foreground))",
         },
+        "icon-rail": {
+          DEFAULT: "hsl(var(--icon-rail))",
+          foreground: "hsl(var(--icon-rail-foreground))",
+        },
       },
       borderRadius: {
         lg: "var(--radius)",
@@ -80,11 +84,16 @@ export default {
           "0%, 80%, 100%": { opacity: "0.3", transform: "scale(0.8)" },
           "40%": { opacity: "1", transform: "scale(1)" },
         },
+        "sparkle-pulse": {
+          "0%, 100%": { opacity: "0.4", transform: "scale(0.9) rotate(0deg)" },
+          "50%": { opacity: "1", transform: "scale(1.1) rotate(15deg)" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
         "pulse-dot": "pulse-dot 1.4s infinite ease-in-out",
+        "sparkle-pulse": "sparkle-pulse 1.5s infinite ease-in-out",
       },
     },
   },

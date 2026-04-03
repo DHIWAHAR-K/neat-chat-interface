@@ -1,10 +1,9 @@
-import { Sparkles } from "lucide-react";
+import { Sparkles, Pencil, GraduationCap, Code2 } from "lucide-react";
 
-const SUGGESTIONS = [
-  "Explain quantum computing in simple terms",
-  "Write a short poem about the ocean",
-  "Help me debug a React component",
-  "What are the best practices for TypeScript?",
+const ACTION_CHIPS = [
+  { icon: Pencil, label: "Write" },
+  { icon: GraduationCap, label: "Learn" },
+  { icon: Code2, label: "Code" },
 ];
 
 interface WelcomeScreenProps {
@@ -12,25 +11,35 @@ interface WelcomeScreenProps {
 }
 
 export function WelcomeScreen({ onSuggestionClick }: WelcomeScreenProps) {
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return "Good morning";
+    if (hour < 17) return "Good afternoon";
+    return "Good evening";
+  };
+
   return (
-    <div className="flex flex-col items-center justify-center flex-1 px-4 pb-8">
-      <div className="flex items-center gap-2 mb-6">
-        <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
-          <Sparkles className="h-5 w-5 text-primary" />
-        </div>
+    <div className="flex flex-col items-center justify-center flex-1 px-4">
+      {/* Claude sparkle icon */}
+      <div className="mb-5">
+        <Sparkles className="h-10 w-10 text-primary" />
       </div>
 
-      <h1 className="text-2xl font-semibold mb-2">How can I help you today?</h1>
-      <p className="text-muted-foreground text-sm mb-8">Ask me anything or pick a suggestion below</p>
+      {/* Greeting */}
+      <h1 className="text-3xl font-semibold mb-8 text-foreground">
+        {getGreeting()}, User
+      </h1>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 w-full max-w-xl">
-        {SUGGESTIONS.map((s) => (
+      {/* Action chips */}
+      <div className="flex flex-wrap gap-2 justify-center">
+        {ACTION_CHIPS.map((chip) => (
           <button
-            key={s}
-            onClick={() => onSuggestionClick(s)}
-            className="text-left text-sm px-4 py-3 rounded-xl border border-border hover:bg-muted/60 transition-colors leading-relaxed"
+            key={chip.label}
+            onClick={() => onSuggestionClick(`Help me ${chip.label.toLowerCase()}`)}
+            className="flex items-center gap-2 text-sm px-4 py-2 rounded-full border border-border hover:bg-accent transition-colors text-muted-foreground hover:text-foreground"
           >
-            {s}
+            <chip.icon className="h-4 w-4" />
+            {chip.label}
           </button>
         ))}
       </div>
