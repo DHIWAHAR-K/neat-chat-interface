@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from "react";
-import { ChevronDown, Share } from "lucide-react";
+import { ChevronDown, Share, PanelLeft } from "lucide-react";
 import { ChatSidebar } from "@/components/chat/ChatSidebar";
 import { ChatMessage } from "@/components/chat/ChatMessage";
 import { ChatInput } from "@/components/chat/ChatInput";
@@ -77,9 +77,7 @@ const Index = () => {
       }
 
       scrollToBottom();
-
       setIsTyping(true);
-      const responseDelay = 1000 + Math.random() * 1500;
       const finalConvId = convId;
 
       setTimeout(() => {
@@ -98,16 +96,9 @@ const Index = () => {
         );
         setIsTyping(false);
         scrollToBottom();
-      }, responseDelay);
+      }, 1000 + Math.random() * 1500);
     },
     [activeId, scrollToBottom]
-  );
-
-  const handleSuggestionClick = useCallback(
-    (text: string) => {
-      handleSend(text, []);
-    },
-    [handleSend]
   );
 
   useEffect(() => {
@@ -119,14 +110,8 @@ const Index = () => {
       <ChatSidebar
         conversations={conversations}
         activeId={activeId}
-        onSelect={(id) => {
-          setActiveId(id);
-          setSidebarOpen(false);
-        }}
-        onNew={() => {
-          handleNewChat();
-          setSidebarOpen(false);
-        }}
+        onSelect={(id) => { setActiveId(id); setSidebarOpen(false); }}
+        onNew={() => { handleNewChat(); setSidebarOpen(false); }}
         onDelete={handleDeleteConversation}
         theme={theme}
         onToggleTheme={toggleTheme}
@@ -137,6 +122,14 @@ const Index = () => {
       <div className="flex-1 flex flex-col min-w-0">
         {/* Header */}
         <header className="flex items-center justify-between h-12 px-4 flex-shrink-0">
+          {!sidebarOpen && (
+            <button
+              onClick={() => setSidebarOpen(true)}
+              className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors lg:hidden"
+            >
+              <PanelLeft className="h-5 w-5" />
+            </button>
+          )}
           {hasMessages ? (
             <>
               <button className="flex items-center gap-1 text-sm font-medium text-foreground hover:text-muted-foreground transition-colors">
@@ -153,14 +146,9 @@ const Index = () => {
           )}
         </header>
 
-        {/* Messages or Welcome */}
+        {/* Welcome (centered input) or Chat (bottom input) */}
         {!hasMessages ? (
-          <>
-            <WelcomeScreen onSuggestionClick={handleSuggestionClick} />
-            <div className="flex-shrink-0">
-              <ChatInput onSend={handleSend} disabled={isTyping} isWelcome />
-            </div>
-          </>
+          <WelcomeScreen onSend={handleSend} disabled={isTyping} />
         ) : (
           <>
             <div ref={scrollRef} className="flex-1 overflow-y-auto scrollbar-thin">
