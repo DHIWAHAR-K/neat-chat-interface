@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from "react";
-import { PanelLeft } from "lucide-react";
+import { ChevronDown, Share } from "lucide-react";
 import { ChatSidebar } from "@/components/chat/ChatSidebar";
 import { ChatMessage } from "@/components/chat/ChatMessage";
 import { ChatInput } from "@/components/chat/ChatInput";
@@ -23,6 +23,7 @@ const Index = () => {
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const active = conversations.find((c) => c.id === activeId) ?? null;
+  const hasMessages = active && active.messages.length > 0;
 
   const scrollToBottom = useCallback(() => {
     setTimeout(() => {
@@ -77,7 +78,6 @@ const Index = () => {
 
       scrollToBottom();
 
-      // Mock AI response
       setIsTyping(true);
       const responseDelay = 1000 + Math.random() * 1500;
       const finalConvId = convId;
@@ -110,7 +110,6 @@ const Index = () => {
     [handleSend]
   );
 
-  // Auto-scroll on new messages
   useEffect(() => {
     scrollToBottom();
   }, [active?.messages.length, scrollToBottom]);
@@ -132,43 +131,51 @@ const Index = () => {
         theme={theme}
         onToggleTheme={toggleTheme}
         open={sidebarOpen}
-        onClose={() => setSidebarOpen(false)}
+        onToggle={() => setSidebarOpen((o) => !o)}
       />
 
       <div className="flex-1 flex flex-col min-w-0">
         {/* Header */}
-        <header className="flex items-center h-12 px-3 flex-shrink-0 border-b border-border">
-          {!sidebarOpen && (
-            <button
-              onClick={() => setSidebarOpen(true)}
-              className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-            >
-              <PanelLeft className="h-5 w-5" />
-            </button>
+        <header className="flex items-center justify-between h-12 px-4 flex-shrink-0">
+          {hasMessages ? (
+            <>
+              <button className="flex items-center gap-1 text-sm font-medium text-foreground hover:text-muted-foreground transition-colors">
+                {active.title}
+                <ChevronDown className="h-3.5 w-3.5" />
+              </button>
+              <button className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors px-3 py-1.5 rounded-lg hover:bg-muted">
+                <Share className="h-4 w-4" />
+                Share
+              </button>
+            </>
+          ) : (
+            <div />
           )}
-          <span className="ml-2 text-sm font-medium text-muted-foreground">
-            {active ? active.title : "New chat"}
-          </span>
         </header>
 
         {/* Messages or Welcome */}
-        {!active || active.messages.length === 0 ? (
-          <WelcomeScreen onSuggestionClick={handleSuggestionClick} />
-        ) : (
-          <div ref={scrollRef} className="flex-1 overflow-y-auto scrollbar-thin">
-            <div className="max-w-3xl mx-auto px-4 py-6 space-y-5">
-              {active.messages.map((msg) => (
-                <ChatMessage key={msg.id} message={msg} />
-              ))}
-              {isTyping && <TypingIndicator />}
+        {!hasMessages ? (
+          <>
+            <WelcomeScreen onSuggestionClick={handleSuggestionClick} />
+            <div className="flex-shrink-0">
+              <ChatInput onSend={handleSend} disabled={isTyping} isWelcome />
             </div>
-          </div>
+          </>
+        ) : (
+          <>
+            <div ref={scrollRef} className="flex-1 overflow-y-auto scrollbar-thin">
+              <div className="max-w-3xl mx-auto px-4 py-6 space-y-5">
+                {active.messages.map((msg) => (
+                  <ChatMessage key={msg.id} message={msg} />
+                ))}
+                {isTyping && <TypingIndicator />}
+              </div>
+            </div>
+            <div className="flex-shrink-0">
+              <ChatInput onSend={handleSend} disabled={isTyping} />
+            </div>
+          </>
         )}
-
-        {/* Input */}
-        <div className="flex-shrink-0">
-          <ChatInput onSend={handleSend} disabled={isTyping} />
-        </div>
       </div>
     </div>
   );
