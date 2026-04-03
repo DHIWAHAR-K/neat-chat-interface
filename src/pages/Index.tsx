@@ -125,7 +125,7 @@ const Index = () => {
           {!sidebarOpen && (
             <button
               onClick={() => setSidebarOpen(true)}
-              className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors lg:hidden"
+              className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
             >
               <PanelLeft className="h-5 w-5" />
             </button>
