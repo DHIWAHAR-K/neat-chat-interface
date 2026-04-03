@@ -1,56 +1,53 @@
 
 
-## Pixel-Perfect Claude UI Overhaul
+## Problem
 
-### What needs to change
+The current sidebar uses two completely separate layouts (expanded vs collapsed) that crossfade with opacity. This is not how the Claude sidebar works. In Claude's UI:
 
-The current UI has a traditional sidebar + bottom input layout. The real Claude UI (from your screenshots) has several distinct differences:
+1. The **icon rail is always visible** (52px) — it never disappears
+2. When expanded, a **panel slides out beside the rail**, pushing content or overlaying it
+3. The total expanded width is ~280px (rail + panel)
 
-### 1. Sidebar: Icon Rail + Expandable Panel
-**Current**: A sliding drawer sidebar that fully hides.
-**Target**: A permanent narrow icon rail (~48px) on the left that is always visible, with icons stacked vertically. Clicking the sidebar toggle expands a wider panel with text labels and conversation history. The icons (top to bottom): sidebar toggle, new chat (+), search, customize, chats, projects, artifacts, code. Bottom: download icon, user avatar with initials.
+Currently, the sidebar swaps between two overlapping absolute-positioned divs, which means the icon rail vanishes when expanded and the full panel vanishes when collapsed. The user wants the rail to persist at all times.
 
-### 2. Welcome Screen: Centered Greeting + Inline Input
-**Current**: "How can I help you today?" with suggestion grid, input at bottom.
-**Target**: Large greeting "Good afternoon, [Name]" with Claude's orange asterisk/sparkle icon. The input box is centered in the page (not stuck to bottom) with "How can I help you today?" as placeholder. Below the input: a row of action chips (Write, Learn, Code, From Drive, From Gmail) with small icons.
+## Plan
 
-### 3. Input Box Redesign
-**Current**: Bottom-fixed input with paperclip + send button.
-**Target**: Rounded rectangle input with textarea on top row, bottom row has "+" button on left and "Sonnet 4.6" model selector + audio/equalizer icon on right. Send button only appears when there's text. In chat view, placeholder changes to "Reply...".
+### 1. Restructure ChatSidebar layout
 
-### 4. Chat Messages + Action Icons
-**Current**: AI messages render markdown, no action buttons.
-**Target**: After each AI message, show a row of small action icons: copy, thumbs up, thumbs down, retry. The Claude asterisk icon appears as the typing/loading indicator (not dots).
+Rewrite the sidebar to use a **two-part architecture**:
 
-### 5. Header Bar
-**Current**: Simple bar with sidebar toggle + "New chat" text.
-**Target**: In chat view: conversation title with a dropdown chevron on the left, "Share" button on the right. In welcome view: minimal/no header text.
+```text
+┌──────┬─────────────────┐
+│ Rail │   Slide Panel   │
+│ 52px │   ~228px wide   │
+│      │  (when open)    │
+│ Always│                 │
+│visible│                 │
+└──────┴─────────────────┘
+```
 
-### 6. Color Palette (Dark Mode Default)
-**Current**: Warm beige light mode.
-**Target**: Match Claude's exact dark palette - very dark warm brown/charcoal background (~#2a2520), sidebar slightly darker, input box with subtle lighter background, warm-toned text.
+- The `<aside>` always renders the **icon rail** (52px, flex-col, icons stacked)
+- Next to it (inside the same aside or as a sibling), render the **expandable panel** that slides in/out using `width` + `overflow-hidden` transition
+- When collapsed: aside is 52px (rail only)
+- When expanded: aside is 280px (rail 52px + panel 228px), with a smooth `transition-[width]`
 
----
+### 2. Icon rail (always rendered)
 
-### Files to Create/Modify
+- Fixed 52px column, always visible
+- Contains: toggle button (CopyIcon), Plus, Search, Settings2, MessageCircle, FolderKanban, Blocks, Code2
+- Bottom: blue dot, Download, user avatar "DA"
+- Same styling as the current collapsed state
 
-| File | Action |
-|------|--------|
-| `src/index.css` | Update dark theme colors to match Claude's warm dark brown palette; also refine light mode |
-| `src/components/chat/ChatSidebar.tsx` | Complete rewrite: icon rail + expandable panel with nav items (New chat, Search, Customize, Chats, Projects, Artifacts, Code), recents list, user avatar at bottom |
-| `src/components/chat/WelcomeScreen.tsx` | Rewrite: large greeting with Claude asterisk, centered input (move input into welcome), action chips row (Write, Learn, Code, From Drive, From Gmail) |
-| `src/components/chat/ChatInput.tsx` | Redesign: "+" attach button on bottom-left, model selector "Sonnet 4.6" + audio icon on bottom-right, no visible send button (Enter to send), rounded container |
-| `src/components/chat/ChatMessage.tsx` | Add action icon row below AI messages (copy, thumbs up, thumbs down, retry) |
-| `src/components/chat/TypingIndicator.tsx` | Replace dots with Claude's animated orange asterisk/sparkle |
-| `src/pages/Index.tsx` | Update layout: icon rail always visible, header with title dropdown + Share button, adjust input positioning for welcome vs chat states |
-| `tailwind.config.ts` | Add any new animation keyframes (asterisk spin) |
+### 3. Expandable panel (conditionally visible)
 
-### Technical Details
+- Rendered beside the rail, slides in via width transition
+- Contains: "Claude" header, nav labels (New chat, Search, etc.), Recents list, user profile footer
+- Uses `opacity` + `transition` for content fade-in to avoid text clipping during animation
 
-- The icon rail is a flex column of ~48px width, always rendered, separate from the expandable sidebar panel
-- Sidebar expansion overlays or pushes content, with conversation list under "Recents" label
-- Welcome screen input is vertically centered; in chat mode it sticks to bottom
-- Model selector is a static dropdown-style element (non-functional for now, just UI)
-- Action chips use small emoji/icon prefixes (pencil for Write, sparkle for Learn, code brackets for Code, Google Drive icon, Gmail icon)
-- User avatar shows initials in a circle at bottom-left of icon rail
+### 4. Index.tsx — no changes needed
+
+The parent already handles `sidebarOpen` state and passes `open`/`onToggle` props. No structural changes required there.
+
+### Files to modify
+- `src/components/chat/ChatSidebar.tsx` — full rewrite of the layout structure
 
