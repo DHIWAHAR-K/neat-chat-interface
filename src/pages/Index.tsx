@@ -19,7 +19,7 @@ const Index = () => {
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [isTyping, setIsTyping] = useState(false);
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const active = conversations.find((c) => c.id === activeId) ?? null;
