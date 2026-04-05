@@ -23,16 +23,16 @@ export function WelcomeScreen({ onSend, disabled }: WelcomeScreenProps) {
 
   return (
     <div className="flex flex-col items-center justify-center flex-1 px-4">
-      <div className="mb-5">
-        <Sparkles className="h-10 w-10 text-primary" />
+      <div className="mb-6">
+        <Sparkles className="h-9 w-9 text-muted-foreground/70" strokeWidth={1.5} />
       </div>
 
-      <h1 className="text-3xl font-semibold mb-8 text-foreground">
+      <h1 className="text-[28px] font-medium mb-8 text-foreground tracking-[-0.01em]">
         {getGreeting()}, User
       </h1>
 
       {/* Centered input */}
-      <div className="w-full max-w-3xl mb-4">
+      <div className="w-full max-w-2xl mb-4">
         <ChatInput onSend={onSend} disabled={disabled} isWelcome />
       </div>
 
@@ -42,9 +42,9 @@ export function WelcomeScreen({ onSend, disabled }: WelcomeScreenProps) {
           <button
             key={chip.label}
             onClick={() => onSend(`Help me ${chip.label.toLowerCase()}`, [])}
-            className="flex items-center gap-2 text-sm px-4 py-2 rounded-full border border-border hover:bg-accent transition-colors text-muted-foreground hover:text-foreground"
+            className="flex items-center gap-2 text-[13px] px-4 py-2 rounded-full border border-border/80 hover:bg-accent transition-colors text-muted-foreground hover:text-foreground"
           >
-            <chip.icon className="h-4 w-4" />
+            <chip.icon className="h-3.5 w-3.5" />
             {chip.label}
           </button>
         ))}
