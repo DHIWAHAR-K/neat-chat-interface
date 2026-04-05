@@ -14,10 +14,14 @@ import {
   getMockResponse,
 } from "@/lib/chat-store";
 import { useTranscribe } from "@/hooks/use-transcribe";
+import { generateSOAP } from "@/lib/api";
+import { SOAPDisplay } from "@/components/chat/SOAPDisplay";
+import { SOAPNote } from "@/lib/api";
 
 const Index = () => {
   const { theme, toggleTheme } = useTheme();
   const { transcribe } = useTranscribe();
+  const [soapNotes, setSoapNotes] = useState<Record<string, SOAPNote>>({});
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [isTyping, setIsTyping] = useState(false);
@@ -101,9 +105,10 @@ const Index = () => {
         return getMockResponse();
       };
 
-      getReply().then((replyContent) => {
+      getReply().then(async (replyContent) => {
+        const msgId = genId();
         const aiMsg: Message = {
-          id: genId(),
+          id: msgId,
           role: "assistant",
           content: replyContent,
           timestamp: Date.now(),
@@ -117,6 +122,17 @@ const Index = () => {
         );
         setIsTyping(false);
         scrollToBottom();
+
+        // Auto-generate SOAP note if we got a transcript back
+        if (replyContent.startsWith("**Transcript**") && audioFile) {
+          const transcriptText = replyContent.replace(/^\*\*Transcript\*\*[^\n]*\n\n/, "");
+          try {
+            const note = await generateSOAP(transcriptText);
+            setSoapNotes((prev) => ({ ...prev, [msgId]: note }));
+          } catch {
+            // SOAP is optional; fail silently
+          }
+        }
       });
     },
     [activeId, scrollToBottom]
@@ -168,7 +184,14 @@ const Index = () => {
             <div ref={scrollRef} className="flex-1 overflow-y-auto scrollbar-thin">
               <div className="max-w-3xl mx-auto px-4 py-6 space-y-5">
                 {active.messages.map((msg) => (
-                  <ChatMessage key={msg.id} message={msg} />
+                  <div key={msg.id}>
+                    <ChatMessage message={msg} />
+                    {soapNotes[msg.id] && (
+                      <div className="mt-2">
+                        <SOAPDisplay note={soapNotes[msg.id]} />
+                      </div>
+                    )}
+                  </div>
                 ))}
                 {isTyping && <TypingIndicator />}
               </div>
