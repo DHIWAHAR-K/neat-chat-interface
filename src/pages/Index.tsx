@@ -13,9 +13,11 @@ import {
   genId,
   getMockResponse,
 } from "@/lib/chat-store";
+import { useTranscribe } from "@/hooks/use-transcribe";
 
 const Index = () => {
   const { theme, toggleTheme } = useTheme();
+  const { transcribe } = useTranscribe();
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [isTyping, setIsTyping] = useState(false);
@@ -80,11 +82,30 @@ const Index = () => {
       setIsTyping(true);
       const finalConvId = convId;
 
-      setTimeout(() => {
+      // If an audio file is attached, transcribe it; otherwise use mock response.
+      const audioFile = files.find((f) =>
+        f.type.startsWith("audio/") || f.type.startsWith("video/")
+      );
+
+      const getReply = async (): Promise<string> => {
+        if (audioFile) {
+          // Fetch the blob from the object URL created by ChatInput
+          const blob = await fetch(audioFile.url).then((r) => r.blob());
+          const file = new File([blob], audioFile.name, { type: audioFile.type });
+          const result = await transcribe(file);
+          if (result) {
+            return `**Transcript** *(${result.disclaimer})*\n\n${result.transcript}`;
+          }
+          return "Transcription failed. Please check your API key and try again.";
+        }
+        return getMockResponse();
+      };
+
+      getReply().then((replyContent) => {
         const aiMsg: Message = {
           id: genId(),
           role: "assistant",
-          content: getMockResponse(),
+          content: replyContent,
           timestamp: Date.now(),
         };
         setConversations((prev) =>
@@ -96,7 +117,7 @@ const Index = () => {
         );
         setIsTyping(false);
         scrollToBottom();
-      }, 1000 + Math.random() * 1500);
+      });
     },
     [activeId, scrollToBottom]
   );
