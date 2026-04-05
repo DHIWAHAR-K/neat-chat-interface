@@ -16,10 +16,10 @@ export function ChatMessage({ message }: { message: Message }) {
   return (
     <div className={`flex w-full ${isUser ? "justify-end" : "justify-start"}`}>
       <div
-        className={`max-w-[85%] ${
+        className={`${
           isUser
-            ? "bg-user-bubble text-user-bubble-foreground rounded-2xl rounded-br-md px-4 py-2.5"
-            : "py-2"
+            ? "max-w-[75%] bg-user-bubble text-user-bubble-foreground rounded-3xl rounded-br-lg px-4 py-2.5"
+            : "max-w-[85%] py-1"
         }`}
       >
         {message.files && message.files.length > 0 && (
@@ -41,38 +41,38 @@ export function ChatMessage({ message }: { message: Message }) {
         )}
 
         {isUser ? (
-          <p className="text-sm whitespace-pre-wrap leading-relaxed">{message.content}</p>
+          <p className="text-[15px] whitespace-pre-wrap leading-relaxed">{message.content}</p>
         ) : (
           <MarkdownRenderer content={message.content} />
         )}
 
         {/* Action icons for AI messages */}
         {!isUser && (
-          <div className="flex items-center gap-1 mt-2">
+          <div className="flex items-center gap-0.5 mt-3 -ml-1.5">
             <button
               onClick={handleCopy}
-              className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+              className="p-1.5 rounded-md text-muted-foreground/60 hover:text-foreground hover:bg-accent transition-colors"
               title="Copy"
             >
-              {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+              {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
             </button>
             <button
-              className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+              className="p-1.5 rounded-md text-muted-foreground/60 hover:text-foreground hover:bg-accent transition-colors"
               title="Good response"
             >
-              <ThumbsUp className="h-3.5 w-3.5" />
+              <ThumbsUp className="h-4 w-4" />
             </button>
             <button
-              className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+              className="p-1.5 rounded-md text-muted-foreground/60 hover:text-foreground hover:bg-accent transition-colors"
               title="Bad response"
             >
-              <ThumbsDown className="h-3.5 w-3.5" />
+              <ThumbsDown className="h-4 w-4" />
             </button>
             <button
-              className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+              className="p-1.5 rounded-md text-muted-foreground/60 hover:text-foreground hover:bg-accent transition-colors"
               title="Retry"
             >
-              <RefreshCw className="h-3.5 w-3.5" />
+              <RefreshCw className="h-4 w-4" />
             </button>
           </div>
         )}

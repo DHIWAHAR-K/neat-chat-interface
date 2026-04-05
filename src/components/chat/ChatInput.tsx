@@ -69,10 +69,10 @@ export function ChatInput({ onSend, disabled, isWelcome }: ChatInputProps) {
   };
 
   return (
-    <div className="w-full max-w-3xl mx-auto px-4 pb-4">
+    <div className="w-full max-w-2xl mx-auto px-4 pb-4">
       <div
-        className={`relative rounded-2xl border bg-card transition-colors ${
-          dragging ? "border-primary ring-2 ring-primary/20" : "border-border"
+        className={`relative rounded-2xl border bg-card shadow-sm transition-colors ${
+          dragging ? "border-primary ring-2 ring-primary/20" : "border-border/70"
         }`}
         onDragOver={(e) => {
           e.preventDefault();
@@ -102,16 +102,16 @@ export function ChatInput({ onSend, disabled, isWelcome }: ChatInputProps) {
         )}
 
         {/* Textarea */}
-        <div className="px-3 pt-3 pb-1">
+        <div className="px-4 pt-3 pb-1">
           <textarea
             ref={textareaRef}
             value={text}
             onChange={(e) => setText(e.target.value)}
             onKeyDown={handleKeyDown}
             onInput={handleInput}
-            placeholder={isWelcome ? "How can I help you today?" : "Reply to Claude..."}
+            placeholder={isWelcome ? "How can Claude help you today?" : "Reply to Claude..."}
             rows={1}
-            className="w-full resize-none bg-transparent text-sm outline-none placeholder:text-muted-foreground max-h-[200px] py-1 leading-relaxed"
+            className="w-full resize-none bg-transparent text-[15px] outline-none placeholder:text-muted-foreground/70 max-h-[200px] py-1 leading-relaxed"
           />
         </div>
 
@@ -119,30 +119,30 @@ export function ChatInput({ onSend, disabled, isWelcome }: ChatInputProps) {
         <div className="flex items-center justify-between px-3 pb-2.5">
           <button
             onClick={() => fileInputRef.current?.click()}
-            className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+            className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
             type="button"
           >
             <Plus className="h-5 w-5" />
           </button>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5">
             {/* Model selector */}
             <button
-              className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors px-2 py-1 rounded-md hover:bg-muted"
+              className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors px-2.5 py-1.5 rounded-lg hover:bg-accent"
               type="button"
             >
-              Sonnet 4.6
+              Claude 3.5 Sonnet
               <ChevronDown className="h-3 w-3" />
             </button>
 
             <button
-              className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+              className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
               type="button"
             >
               <AudioLines className="h-4 w-4" />
             </button>
 
-            {/* Send button - only visible when there's text */}
+            {/* Send button */}
             {canSend && (
               <button
                 onClick={handleSend}
@@ -164,7 +164,7 @@ export function ChatInput({ onSend, disabled, isWelcome }: ChatInputProps) {
         />
       </div>
 
-      <p className="text-center text-[11px] text-muted-foreground mt-2">
+      <p className="text-center text-[11px] text-muted-foreground/60 mt-2.5">
         Claude can make mistakes. Please double-check responses.
       </p>
     </div>
