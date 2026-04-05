@@ -121,16 +121,16 @@ const Index = () => {
 
       <div className="flex-1 flex flex-col min-w-0">
         {/* Header */}
-        <header className="flex items-center justify-between h-12 px-4 flex-shrink-0">
+        <header className="flex items-center justify-between h-11 px-4 flex-shrink-0">
           <div />
           {hasMessages ? (
             <>
-              <button className="flex items-center gap-1 text-sm font-medium text-foreground hover:text-muted-foreground transition-colors">
+              <button className="flex items-center gap-1 text-[13px] font-medium text-foreground/80 hover:text-foreground transition-colors">
                 {active.title}
-                <ChevronDown className="h-3.5 w-3.5" />
+                <ChevronDown className="h-3 w-3" />
               </button>
-              <button className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors px-3 py-1.5 rounded-lg hover:bg-muted">
-                <Share className="h-4 w-4" />
+              <button className="flex items-center gap-1.5 text-[13px] text-muted-foreground hover:text-foreground transition-colors px-2.5 py-1 rounded-lg hover:bg-accent">
+                <Share className="h-3.5 w-3.5" />
                 Share
               </button>
             </>
