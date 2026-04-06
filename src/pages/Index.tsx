@@ -222,7 +222,9 @@ const Index = () => {
         activeId={activeId}
         onSelect={(id) => { setActiveId(id); setSidebarOpen(false); }}
         onNew={() => { handleNewChat(); setSidebarOpen(false); }}
-        onDelete={handleDeleteConversation}
+        onDelete={(id) => {
+          void handleDeleteConversation(id);
+        }}
         theme={theme}
         onToggleTheme={toggleTheme}
         open={sidebarOpen}
