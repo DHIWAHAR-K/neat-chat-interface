@@ -12,11 +12,33 @@ import {
   FileAttachment,
   genId,
   getMockResponse,
+  conversationFromApi,
 } from "@/lib/chat-store";
 import { useTranscribe } from "@/hooks/use-transcribe";
-import { generateSOAP } from "@/lib/api";
+import {
+  generateSOAP,
+  listChatConversations,
+  getChatConversation,
+  createChatConversation,
+  appendChatMessage,
+  deleteChatConversation,
+} from "@/lib/api";
 import { SOAPDisplay } from "@/components/chat/SOAPDisplay";
 import { SOAPNote } from "@/lib/api";
+
+function mergeFilesOntoMessage(
+  conv: Conversation,
+  messageId: string,
+  files: FileAttachment[] | undefined
+): Conversation {
+  if (!files?.length) return conv;
+  return {
+    ...conv,
+    messages: conv.messages.map((m) =>
+      m.id === messageId ? { ...m, files } : m
+    ),
+  };
+}
 
 const Index = () => {
   const { theme, toggleTheme } = useTheme();
@@ -37,12 +59,36 @@ const Index = () => {
     }, 50);
   }, []);
 
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const summaries = await listChatConversations();
+        if (cancelled || summaries.length === 0) return;
+        const full = await Promise.all(summaries.map((s) => getChatConversation(s.id)));
+        if (!cancelled) {
+          setConversations(full.map(conversationFromApi));
+        }
+      } catch {
+        /* Mongo/chat not configured — start with empty sidebar */
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   const handleNewChat = useCallback(() => {
     setActiveId(null);
   }, []);
 
   const handleDeleteConversation = useCallback(
-    (id: string) => {
+    async (id: string) => {
+      try {
+        await deleteChatConversation(id);
+      } catch {
+        /* remove locally even if server returns error */
+      }
       setConversations((prev) => prev.filter((c) => c.id !== id));
       if (activeId === id) setActiveId(null);
     },
@@ -51,91 +97,118 @@ const Index = () => {
 
   const handleSend = useCallback(
     (content: string, files: FileAttachment[]) => {
-      const userMsg: Message = {
-        id: genId(),
-        role: "user",
-        content,
-        files: files.length > 0 ? files : undefined,
-        timestamp: Date.now(),
-      };
-
-      let convId = activeId;
-
-      if (!convId) {
-        const newConv: Conversation = {
-          id: genId(),
-          title: content.slice(0, 40) + (content.length > 40 ? "…" : ""),
-          messages: [userMsg],
-          createdAt: Date.now(),
-          updatedAt: Date.now(),
-        };
-        convId = newConv.id;
-        setConversations((prev) => [newConv, ...prev]);
-        setActiveId(convId);
-      } else {
-        setConversations((prev) =>
-          prev.map((c) =>
-            c.id === convId
-              ? { ...c, messages: [...c.messages, userMsg], updatedAt: Date.now() }
-              : c
-          )
-        );
-      }
-
-      scrollToBottom();
-      setIsTyping(true);
-      const finalConvId = convId;
-
-      // If an audio file is attached, transcribe it; otherwise use mock response.
-      const audioFile = files.find((f) =>
-        f.type.startsWith("audio/") || f.type.startsWith("video/")
+      const audioFile = files.find(
+        (f) => f.type.startsWith("audio/") || f.type.startsWith("video/")
       );
 
-      const getReply = async (): Promise<string> => {
-        if (audioFile) {
-          // Fetch the blob from the object URL created by ChatInput
-          const blob = await fetch(audioFile.url).then((r) => r.blob());
-          const file = new File([blob], audioFile.name, { type: audioFile.type });
-          const result = await transcribe(file);
-          if (result) {
-            return `**Transcript** *(${result.disclaimer})*\n\n${result.transcript}`;
-          }
-          return "Transcription failed. Please check your API key and try again.";
-        }
-        return getMockResponse();
-      };
-
-      getReply().then(async (replyContent) => {
-        const msgId = genId();
-        const aiMsg: Message = {
-          id: msgId,
-          role: "assistant",
-          content: replyContent,
+      void (async () => {
+        let convId = activeId;
+        const userMsg: Message = {
+          id: genId(),
+          role: "user",
+          content,
+          files: files.length > 0 ? files : undefined,
           timestamp: Date.now(),
         };
-        setConversations((prev) =>
-          prev.map((c) =>
-            c.id === finalConvId
-              ? { ...c, messages: [...c.messages, aiMsg], updatedAt: Date.now() }
-              : c
-          )
-        );
-        setIsTyping(false);
-        scrollToBottom();
 
-        // Auto-generate SOAP note if we got a transcript back
-        if (replyContent.startsWith("**Transcript**") && audioFile) {
-          const transcriptText = replyContent.replace(/^\*\*Transcript\*\*[^\n]*\n\n/, "");
-          try {
-            const note = await generateSOAP(transcriptText);
-            setSoapNotes((prev) => ({ ...prev, [msgId]: note }));
-          } catch {
-            // SOAP is optional; fail silently
+        try {
+          if (!convId) {
+            const title = content.slice(0, 40) + (content.length > 40 ? "…" : "");
+            const created = await createChatConversation({ title });
+            convId = created.id;
+            setConversations((prev) => [conversationFromApi(created), ...prev]);
+            setActiveId(convId);
+            const afterUser = await appendChatMessage(convId, {
+              id: userMsg.id,
+              role: "user",
+              content: userMsg.content,
+              timestamp: userMsg.timestamp,
+            });
+            setConversations((prev) =>
+              prev.map((c) =>
+                c.id === convId
+                  ? mergeFilesOntoMessage(conversationFromApi(afterUser), userMsg.id, userMsg.files)
+                  : c
+              )
+            );
+          } else {
+            setConversations((prev) =>
+              prev.map((c) =>
+                c.id === convId
+                  ? {
+                      ...c,
+                      messages: [...c.messages, userMsg],
+                      updatedAt: Date.now(),
+                    }
+                  : c
+              )
+            );
+            const afterUser = await appendChatMessage(convId, {
+              id: userMsg.id,
+              role: "user",
+              content: userMsg.content,
+              timestamp: userMsg.timestamp,
+            });
+            setConversations((prev) =>
+              prev.map((c) =>
+                c.id === convId
+                  ? mergeFilesOntoMessage(conversationFromApi(afterUser), userMsg.id, userMsg.files)
+                  : c
+              )
+            );
           }
+
+          scrollToBottom();
+          setIsTyping(true);
+
+          const getReply = async (): Promise<string> => {
+            if (audioFile) {
+              const blob = await fetch(audioFile.url).then((r) => r.blob());
+              const file = new File([blob], audioFile.name, { type: audioFile.type });
+              const result = await transcribe(file);
+              if (result) {
+                return `**Transcript** *(${result.disclaimer})*\n\n${result.transcript}`;
+              }
+              return "Transcription failed. Please check your API key and try again.";
+            }
+            return getMockResponse();
+          };
+
+          const replyContent = await getReply();
+          const aiMsg: Message = {
+            id: genId(),
+            role: "assistant",
+            content: replyContent,
+            timestamp: Date.now(),
+          };
+
+          const afterAi = await appendChatMessage(convId, {
+            id: aiMsg.id,
+            role: "assistant",
+            content: aiMsg.content,
+            timestamp: aiMsg.timestamp,
+          });
+          setConversations((prev) =>
+            prev.map((c) => (c.id === convId ? conversationFromApi(afterAi) : c))
+          );
+          setIsTyping(false);
+          scrollToBottom();
+
+          if (replyContent.startsWith("**Transcript**") && audioFile) {
+            const transcriptText = replyContent.replace(/^\*\*Transcript\*\*[^\n]*\n\n/, "");
+            try {
+              const note = await generateSOAP(transcriptText);
+              setSoapNotes((prev) => ({ ...prev, [aiMsg.id]: note }));
+            } catch {
+              /* SOAP optional */
+            }
+          }
+        } catch {
+          setIsTyping(false);
         }
-      });
+      })();
     },
-    [activeId, scrollToBottom]
+    [activeId, scrollToBottom, transcribe]
   );
 
   useEffect(() => {

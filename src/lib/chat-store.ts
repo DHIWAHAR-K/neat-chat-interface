@@ -1,3 +1,5 @@
+import type { ApiConversation } from "./api";
+
 export interface FileAttachment {
   id: string;
   name: string;
@@ -20,6 +22,21 @@ export interface Conversation {
   messages: Message[];
   createdAt: number;
   updatedAt: number;
+}
+
+export function conversationFromApi(c: ApiConversation): Conversation {
+  return {
+    id: c.id,
+    title: c.title,
+    createdAt: c.createdAt,
+    updatedAt: c.updatedAt,
+    messages: c.messages.map((m) => ({
+      id: m.id,
+      role: m.role,
+      content: m.content,
+      timestamp: m.timestamp,
+    })),
+  };
 }
 
 let nextId = 1;
