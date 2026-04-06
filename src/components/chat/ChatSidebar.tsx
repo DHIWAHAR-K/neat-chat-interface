@@ -8,7 +8,6 @@ import {
   Blocks,
   Code2,
   Download,
-  ChevronsUpDown,
   PanelLeftClose,
   PanelLeft,
   MoreHorizontal,
@@ -16,6 +15,7 @@ import {
   Pencil,
   FolderPlus,
   Trash2,
+  LogOut,
 } from "lucide-react";
 import { Conversation, groupConversationsByDate } from "@/lib/chat-store";
 
@@ -29,6 +29,8 @@ interface ChatSidebarProps {
   onToggleTheme: () => void;
   open: boolean;
   onToggle: () => void;
+  userEmail?: string;
+  onLogout?: () => void;
 }
 
 const NAV_TOP = [
@@ -52,6 +54,8 @@ export function ChatSidebar({
   onDelete,
   open,
   onToggle,
+  userEmail,
+  onLogout,
 }: ChatSidebarProps) {
   const groups = groupConversationsByDate(conversations);
   const [menuOpenId, setMenuOpenId] = useState<string | null>(null);
@@ -213,19 +217,28 @@ export function ChatSidebar({
 
           {/* Bottom */}
           {open ? (
-            <div className="flex-shrink-0 border-t border-sidebar-border px-3 py-3">
+            <div className="flex-shrink-0 border-t border-sidebar-border px-3 py-3 space-y-2">
               <div className="flex items-center gap-2.5 px-1.5">
                 <div className="w-8 h-8 rounded-full bg-accent text-foreground flex items-center justify-center text-[11px] font-semibold flex-shrink-0">
-                  DA
+                  {(userEmail?.[0] ?? "U").toUpperCase()}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-[13px] font-medium text-foreground truncate">Dhiwahar Ad...</p>
-                  <p className="text-[11px] text-muted-foreground">Pro plan</p>
+                  <p className="text-[13px] font-medium text-foreground truncate">
+                    {userEmail || "Signed in"}
+                  </p>
+                  <p className="text-[11px] text-muted-foreground">Account</p>
                 </div>
-                <button className="p-1 text-sidebar-foreground hover:text-foreground transition-colors flex-shrink-0">
-                  <ChevronsUpDown className="h-3.5 w-3.5" />
-                </button>
               </div>
+              {onLogout && (
+                <button
+                  type="button"
+                  onClick={onLogout}
+                  className="flex items-center gap-2 w-full px-3 py-2 rounded-lg text-[13px] text-sidebar-foreground hover:bg-sidebar-accent hover:text-foreground transition-colors"
+                >
+                  <LogOut className="h-4 w-4 flex-shrink-0" />
+                  Log out
+                </button>
+              )}
             </div>
           ) : (
             <div className="flex flex-col items-center gap-1.5 pb-3">

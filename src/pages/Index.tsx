@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import { ChevronDown, Share } from "lucide-react";
 import { ChatSidebar } from "@/components/chat/ChatSidebar";
 import { ChatMessage } from "@/components/chat/ChatMessage";
@@ -22,6 +23,9 @@ import {
   createChatConversation,
   appendChatMessage,
   deleteChatConversation,
+  createScribeSession,
+  fetchMe,
+  setAccessToken,
 } from "@/lib/api";
 import { SOAPDisplay } from "@/components/chat/SOAPDisplay";
 import { SOAPNote } from "@/lib/api";
@@ -41,8 +45,10 @@ function mergeFilesOntoMessage(
 }
 
 const Index = () => {
+  const navigate = useNavigate();
   const { theme, toggleTheme } = useTheme();
   const { transcribe } = useTranscribe();
+  const [userEmail, setUserEmail] = useState<string>("");
   const [soapNotes, setSoapNotes] = useState<Record<string, SOAPNote>>({});
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [activeId, setActiveId] = useState<string | null>(null);
@@ -60,6 +66,12 @@ const Index = () => {
   }, []);
 
   useEffect(() => {
+    void fetchMe()
+      .then((u) => setUserEmail(u.email))
+      .catch(() => {});
+  }, []);
+
+  useEffect(() => {
     let cancelled = false;
     (async () => {
       try {
@@ -70,13 +82,18 @@ const Index = () => {
           setConversations(full.map(conversationFromApi));
         }
       } catch {
-        /* Mongo/chat not configured — start with empty sidebar */
+        /* Chat unavailable — start with empty sidebar */
       }
     })();
     return () => {
       cancelled = true;
     };
   }, []);
+
+  const handleLogout = useCallback(() => {
+    setAccessToken(null);
+    navigate("/login", { replace: true });
+  }, [navigate]);
 
   const handleNewChat = useCallback(() => {
     setActiveId(null);
@@ -199,6 +216,15 @@ const Index = () => {
             try {
               const note = await generateSOAP(transcriptText);
               setSoapNotes((prev) => ({ ...prev, [aiMsg.id]: note }));
+              try {
+                await createScribeSession({
+                  transcript: transcriptText,
+                  soap: note,
+                  linkedConversationId: convId ?? undefined,
+                });
+              } catch {
+                /* scribe persistence optional */
+              }
             } catch {
               /* SOAP optional */
             }
@@ -229,6 +255,8 @@ const Index = () => {
         onToggleTheme={toggleTheme}
         open={sidebarOpen}
         onToggle={() => setSidebarOpen((o) => !o)}
+        userEmail={userEmail}
+        onLogout={handleLogout}
       />
 
       <div className="flex-1 flex flex-col min-w-0">
